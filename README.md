@@ -1,5 +1,5 @@
 # ComfyUI_FrontEndCleanup
-This node customizes the ComfyUI frontend by relocating the action bar into the workflow tabs and hiding selected UI elements to reduce visual clutter.
+This node customizes the ComfyUI frontend by relocating the action bar into the workflow tabs and optionally hiding selected UI elements to reduce visual clutter.
 
 ## Before
 

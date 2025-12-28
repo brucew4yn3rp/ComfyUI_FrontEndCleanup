@@ -1,0 +1,22 @@
+/* Hide subgraph breadcrumb navigation */
+.subgraph-breadcrumb {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide job progress panel (primary selector) */
+div.pointer-events-auto.flex.w-\[350px\].min-w-\[310px\] {
+  display: none !important;
+}
+
+/* Alternative selector for job panel */
+div[class*="pointer-events-auto"][class*="w-[350px]"][class*="min-w-[310px]"] {
+  display: none !important;
+}
+
+/* Hide panels with job progress characteristics */
+div.pointer-events-auto.flex[class*="w-[350px]"]:has(
+  div[class*="bg-interface-panel-job-progress"]
+) {
+  display: none !important;
+}

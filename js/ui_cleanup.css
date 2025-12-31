@@ -18,3 +18,8 @@ body.ui_cleanup_hide_jobprogress div.pointer-events-auto.flex[class*="w-[350px]"
 ) {
     display: none !important;
 }
+
+/* Hide triangle alert icon */
+i.icon-\[lucide--triangle-alert\][data-v-ebc86bb7] {
+    display: none !important;
+}

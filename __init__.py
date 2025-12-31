@@ -1,2 +1,5 @@
 WEB_DIRECTORY = "./js"
-__all__ = ["WEB_DIRECTORY"]
+NODES_LIST = []
+
+__all__ = ["WEB_DIRECTORY", "NODES_LIST"]
+

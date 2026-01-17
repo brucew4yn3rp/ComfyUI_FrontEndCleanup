@@ -13,14 +13,11 @@ body.ui_cleanup_hide_jobprogress div[class*="pointer-events-auto"][class*="w-[35
     display: none !important;
 }
 
-body.ui_cleanup_hide_jobprogress div.pointer-events-auto.flex[class*="w-[350px]"]:has(
-    div[class*="bg-interface-panel-job-progress"]
-) {
+body.ui_cleanup_hide_jobprogress div.pointer-events-auto.flex[class*="w-[350px]"]:has(div[class*="bg-interface-panel-job-progress"]) {
     display: none !important;
 }
 
-/* Hide triangle alert icon
-i.icon-\[lucide--triangle-alert\][data-v-ebc86bb7] {
+/* Hide triangle alert icon if enabled */
+body.ui_cleanup_hide_error_triangle i.icon-\[lucide--triangle-alert\][data-v-214102f7] {
     display: none !important;
 }
- */

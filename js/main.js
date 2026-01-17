@@ -80,6 +80,15 @@ app.registerExtension({
     name: "frontend.cleanup.ui",
     settings: [
         {
+            id: "FrontEndCleanup.UI.Move Actionbar to Top Bar",
+            name: "Move actionbar to top bar",
+            type: "boolean",
+            defaultValue: true,
+            onChange(value) {
+                showRefreshPrompt();
+            }
+        },
+        {
             id: "FrontEndCleanup.UI.Hide Subgraph Breadcrumb",
             name: "Hide subgraph breadcrumb navigation",
             type: "boolean",
@@ -91,6 +100,15 @@ app.registerExtension({
         {
             id: "FrontEndCleanup.UI.Hide Job Progress Panel",
             name: "Hide job progress panel",
+            type: "boolean",
+            defaultValue: true,
+            onChange(value) {
+                showRefreshPrompt();
+            }
+        },
+        {
+            id: "FrontEndCleanup.UI.Hide Error Triangle",
+            name: "Hide error triangle icon",
             type: "boolean",
             defaultValue: true,
             onChange(value) {
@@ -109,8 +127,10 @@ app.registerExtension({
         document.head.appendChild(link);
 
         // Apply body classes based on user settings
+        const moveActionbar = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Move Actionbar to Top Bar", true);
         const hideSubgraph = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Subgraph Breadcrumb", true);
         const hideJobProgress = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Job Progress Panel", true);
+        const hideErrorTriangle = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Error Triangle", true);
         
         if (hideSubgraph) {
             document.body.classList.add("ui_cleanup_hide_subgraph");
@@ -118,11 +138,20 @@ app.registerExtension({
         if (hideJobProgress) {
             document.body.classList.add("ui_cleanup_hide_jobprogress");
         }
+        if (hideErrorTriangle) {
+            document.body.classList.add("ui_cleanup_hide_error_triangle");
+        }
 
         /* -------------------------
-           Move Actionbar (always)
+           Move Actionbar (if enabled)
         -------------------------- */
-        function moveActionbar() {
+        function moveActionbarToTopBar() {
+            // Don't move if user disabled this feature
+            if (!moveActionbar) {
+                console.log(`${LOG} actionbar move disabled (user setting)`);
+                return true;
+            }
+
             if (moved) return true;
 
             const actionbar = document.querySelector(".actionbar-container");
@@ -155,11 +184,11 @@ app.registerExtension({
         }
 
         // Try immediately
-        if (moveActionbar()) return;
+        if (moveActionbarToTopBar()) return;
 
         // Observe async UI hydration
         const observer = new MutationObserver(() => {
-            if (moveActionbar()) observer.disconnect();
+            if (moveActionbarToTopBar()) observer.disconnect();
         });
 
         observer.observe(document.body, {
@@ -170,7 +199,9 @@ app.registerExtension({
         // Safety timeout
         setTimeout(() => {
             observer.disconnect();
-            if (!moved) console.warn(`${LOG} timeout`);
+            if (!moved && moveActionbar) {
+                console.warn(`${LOG} timeout`);
+            }
         }, 10000);
 
         // Mark initial setup as complete after a short delay

@@ -66,14 +66,14 @@ app.registerExtension({
             id: "FrontEndCleanup.UI.Hide Subgraph Breadcrumb",
             name: "Hide subgraph breadcrumb navigation",
             type: "boolean",
-            defaultValue: true,
+            defaultValue: false,
             onChange: showRefreshPrompt
         },
         {
             id: "FrontEndCleanup.UI.Hide Job Progress Panel",
             name: "Hide job progress panel",
             type: "boolean",
-            defaultValue: true,
+            defaultValue: false,
             onChange: showRefreshPrompt
         },
         {

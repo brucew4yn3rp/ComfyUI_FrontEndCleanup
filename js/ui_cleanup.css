@@ -18,6 +18,17 @@ body.ui_cleanup_hide_jobprogress div.pointer-events-auto.flex[class*="w-[350px]"
 }
 
 /* Hide triangle alert icon if enabled */
-body.ui_cleanup_hide_error_triangle i.icon-\[lucide--triangle-alert\][data-v-214102f7] {
+body.ui_cleanup_hide_error_triangle i.icon-\[lucide--triangle-alert\] {
     display: none !important;
+}
+
+/* Only hide while being moved */
+.actionbar-container.ui-moving {
+    opacity: 0;
+}
+
+/* Fade in once mounted */
+.actionbar-container.ui-mounted {
+    opacity: 1;
+    transition: opacity 0.12s ease;
 }

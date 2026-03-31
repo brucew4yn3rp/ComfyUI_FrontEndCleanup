@@ -7,7 +7,6 @@ let refreshPromptShown = false;
 let initialSetupComplete = false;
 
 function showRefreshPrompt() {
-    // Don't show prompt during initial page load
     if (!initialSetupComplete) return;
     if (refreshPromptShown) return;
     refreshPromptShown = true;
@@ -26,99 +25,68 @@ function showRefreshPrompt() {
         display: flex;
         align-items: center;
         gap: 12px;
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: system-ui;
         font-size: 14px;
     `;
 
     prompt.innerHTML = `
         <span>Settings changed. Refresh to apply?</span>
-        <button style="
-            background: #4a9eff;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-        ">Refresh</button>
-        <button style="
-            background: transparent;
-            color: #aaa;
-            border: 1px solid #555;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        ">Dismiss</button>
+        <button>Refresh</button>
+        <button>Dismiss</button>
     `;
 
-    const refreshBtn = prompt.querySelectorAll("button")[0];
-    const dismissBtn = prompt.querySelectorAll("button")[1];
+    const [refreshBtn, dismissBtn] = prompt.querySelectorAll("button");
 
-    refreshBtn.addEventListener("click", () => {
-        location.reload();
-    });
+    refreshBtn.onclick = () => location.reload();
+    dismissBtn.onclick = () => prompt.remove();
 
-    dismissBtn.addEventListener("click", () => {
-        prompt.remove();
-    });
-
-    // Auto-dismiss after 10 seconds
     setTimeout(() => {
-        if (prompt.parentNode) {
-            prompt.style.transition = "opacity 0.3s";
-            prompt.style.opacity = "0";
-            setTimeout(() => prompt.remove(), 300);
-        }
+        prompt.style.opacity = "0";
+        setTimeout(() => prompt.remove(), 300);
     }, 10000);
 
     document.body.appendChild(prompt);
 }
 
+/* -------------------------
+   Extension
+--------------------------- */
 app.registerExtension({
     name: "frontend.cleanup.ui",
+
     settings: [
         {
             id: "FrontEndCleanup.UI.Move Actionbar to Top Bar",
             name: "Move actionbar to top bar",
             type: "boolean",
             defaultValue: true,
-            onChange(value) {
-                showRefreshPrompt();
-            }
+            onChange: showRefreshPrompt
         },
         {
             id: "FrontEndCleanup.UI.Hide Subgraph Breadcrumb",
             name: "Hide subgraph breadcrumb navigation",
             type: "boolean",
             defaultValue: true,
-            onChange(value) {
-                showRefreshPrompt();
-            }
+            onChange: showRefreshPrompt
         },
         {
             id: "FrontEndCleanup.UI.Hide Job Progress Panel",
             name: "Hide job progress panel",
             type: "boolean",
             defaultValue: true,
-            onChange(value) {
-                showRefreshPrompt();
-            }
+            onChange: showRefreshPrompt
         },
         {
             id: "FrontEndCleanup.UI.Hide Error Triangle",
             name: "Hide error triangle icon",
             type: "boolean",
             defaultValue: true,
-            onChange(value) {
-                showRefreshPrompt();
-            }
+            onChange: showRefreshPrompt
         }
     ],
+
     async setup() {
         const LOG = "[ComfyUI][FrontEndCleanup]";
-        let moved = false;
 
         // Inject CSS
         const link = document.createElement("link");
@@ -126,69 +94,90 @@ app.registerExtension({
         link.href = "extensions/ComfyUI_FrontEndCleanup/ui_cleanup.css";
         document.head.appendChild(link);
 
-        // Apply body classes based on user settings
-        const moveActionbar = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Move Actionbar to Top Bar", true);
-        const hideSubgraph = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Subgraph Breadcrumb", true);
-        const hideJobProgress = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Job Progress Panel", true);
-        const hideErrorTriangle = app.ui.settings.getSettingValue("FrontEndCleanup.UI.Hide Error Triangle", true);
-        
-        if (hideSubgraph) {
-            document.body.classList.add("ui_cleanup_hide_subgraph");
-        }
-        if (hideJobProgress) {
-            document.body.classList.add("ui_cleanup_hide_jobprogress");
-        }
-        if (hideErrorTriangle) {
-            document.body.classList.add("ui_cleanup_hide_error_triangle");
-        }
+        const moveEnabled = app.ui.settings.getSettingValue(
+            "FrontEndCleanup.UI.Move Actionbar to Top Bar",
+            true
+        );
+
+        const hideSubgraph = app.ui.settings.getSettingValue(
+            "FrontEndCleanup.UI.Hide Subgraph Breadcrumb", true
+        );
+        const hideJobProgress = app.ui.settings.getSettingValue(
+            "FrontEndCleanup.UI.Hide Job Progress Panel", true
+        );
+        const hideErrorTriangle = app.ui.settings.getSettingValue(
+            "FrontEndCleanup.UI.Hide Error Triangle", true
+        );
+
+        if (hideSubgraph) document.body.classList.add("ui_cleanup_hide_subgraph");
+        if (hideJobProgress) document.body.classList.add("ui_cleanup_hide_jobprogress");
+        if (hideErrorTriangle) document.body.classList.add("ui_cleanup_hide_error_triangle");
 
         /* -------------------------
-           Move Actionbar (if enabled)
+        SINGLE INSTANCE ENFORCER
         -------------------------- */
-        function moveActionbarToTopBar() {
-            // Don't move if user disabled this feature
-            if (!moveActionbar) {
-                console.log(`${LOG} actionbar move disabled (user setting)`);
-                return true;
-            }
+        function moveActionbar(actionbar) {
+            actionbar.classList.add("ui-moving");
+            actionbar.classList.remove("ui-mounted");
+            if (!moveEnabled) return;
 
-            if (moved) return true;
-
-            const actionbar = document.querySelector(".actionbar-container");
             const tabsContainer = document.querySelector(
                 ".workflow-tabs-container > div > .flex.h-full.shrink-0.items-center"
             );
 
-            if (!actionbar || !tabsContainer) return false;
+            if (!tabsContainer || !actionbar) return;
 
-            if (tabsContainer.contains(actionbar)) {
-                moved = true;
-                return true;
-            }
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!document.body.contains(actionbar)) return;
+                    // 🔥 REMOVE ALL OTHER ACTIONBARS
+                    const all = document.querySelectorAll(".actionbar-container");
 
-            console.log(`${LOG} moving actionbar`);
+                    all.forEach(el => {
+                        if (el !== actionbar) {
+                            el.remove();
+                        }
+                    });
 
-            Object.assign(actionbar.style, {
-                border: "none",
-                boxShadow: "none",
-                background: "transparent",
-                height: "auto",
-                padding: "0 8px",
+                    // Already correct after cleanup
+                    if (!tabsContainer.contains(actionbar)) {
+                        Object.assign(actionbar.style, {
+                            border: "none",
+                            boxShadow: "none",
+                            background: "transparent",
+                            height: "auto",
+                            padding: "0 8px",
+                        });
+
+                        tabsContainer.appendChild(actionbar);
+                        requestAnimationFrame(() => {
+                            actionbar.classList.remove("ui-moving");
+                            actionbar.classList.add("ui-mounted");
+                        });
+                        console.log(`${LOG} actionbar moved (deduped)`);
+                    }
+                });
             });
-
-            tabsContainer.appendChild(actionbar);
-            moved = true;
-
-            console.log(`${LOG} done`);
-            return true;
         }
 
-        // Try immediately
-        if (moveActionbarToTopBar()) return;
+        /* -------------------------
+        OBSERVER
+        -------------------------- */
+        const observer = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (!(node instanceof HTMLElement)) continue;
 
-        // Observe async UI hydration
-        const observer = new MutationObserver(() => {
-            if (moveActionbarToTopBar()) observer.disconnect();
+                    if (node.matches?.(".actionbar-container")) {
+                        moveActionbar(node);
+                    }
+
+                    const found = node.querySelector?.(".actionbar-container");
+                    if (found) {
+                        moveActionbar(found);
+                    }
+                }
+            }
         });
 
         observer.observe(document.body, {
@@ -196,17 +185,34 @@ app.registerExtension({
             subtree: true,
         });
 
-        // Safety timeout
+        /* -------------------------
+        INITIAL LOAD
+        -------------------------- */
         setTimeout(() => {
-            observer.disconnect();
-            if (!moved && moveActionbar) {
-                console.warn(`${LOG} timeout`);
-            }
-        }, 10000);
+            const bars = document.querySelectorAll(".actionbar-container");
 
-        // Mark initial setup as complete after a short delay
+            if (bars.length > 0) {
+                // Take the LAST one (most recent)
+                moveActionbar(bars[bars.length - 1]);
+            }
+        }, 500);
+
+        /* -------------------------
+        SAFETY LOOP
+        -------------------------- */
+        const interval = setInterval(() => {
+            const bars = document.querySelectorAll(".actionbar-container");
+
+            if (bars.length > 1) {
+                moveActionbar(bars[bars.length - 1]);
+            }
+        }, 1000);
+
+        setTimeout(() => clearInterval(interval), 15000);
+
         setTimeout(() => {
             initialSetupComplete = true;
         }, 1000);
     }
+
 });

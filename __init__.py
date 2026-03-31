@@ -1,5 +1,9 @@
 WEB_DIRECTORY = "./js"
 NODES_LIST = []
 
+NODE_CLASS_MAPPINGS = {}
+
 __all__ = ["WEB_DIRECTORY", "NODES_LIST"]
+
+
 

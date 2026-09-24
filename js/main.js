@@ -123,7 +123,8 @@ app.registerExtension({
         if (hideJobProgress) document.body.classList.add("ui_cleanup_hide_jobprogress");
         if (hideErrorTriangle) document.body.classList.add("ui_cleanup_hide_error_triangle");
         if (hideLogin) document.body.classList.add("ui_cleanup_hide_login");
-
+        if (moveEnabled) document.body.classList.add("ui_cleanup_move_actionbar");
+        
         /* -------------------------
         SINGLE INSTANCE ENFORCER
         -------------------------- */
@@ -152,6 +153,10 @@ app.registerExtension({
 
                     // Already correct after cleanup
                     if (!tabsContainer.contains(actionbar)) {
+                        // Remove the leftover action bar card shell
+                        document.querySelectorAll('[data-testid="action-bar-card"]').forEach(card => {
+                            if (!card.contains(actionbar)) card.remove();
+                        });
                         Object.assign(actionbar.style, {
                             border: "none",
                             boxShadow: "none",

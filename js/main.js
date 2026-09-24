@@ -82,6 +82,13 @@ app.registerExtension({
             type: "boolean",
             defaultValue: true,
             onChange: showRefreshPrompt
+        },
+        {
+            id: "FrontEndCleanup.UI.Hide Login Button",
+            name: "Hide login / account button",
+            type: "boolean",
+            defaultValue: false,
+            onChange: showRefreshPrompt
         }
     ],
 
@@ -108,10 +115,14 @@ app.registerExtension({
         const hideErrorTriangle = app.ui.settings.getSettingValue(
             "FrontEndCleanup.UI.Hide Error Triangle", true
         );
+        const hideLogin = app.ui.settings.getSettingValue(
+        "FrontEndCleanup.UI.Hide Login Button", false
+        );
 
         if (hideSubgraph) document.body.classList.add("ui_cleanup_hide_subgraph");
         if (hideJobProgress) document.body.classList.add("ui_cleanup_hide_jobprogress");
         if (hideErrorTriangle) document.body.classList.add("ui_cleanup_hide_error_triangle");
+        if (hideLogin) document.body.classList.add("ui_cleanup_hide_login");
 
         /* -------------------------
         SINGLE INSTANCE ENFORCER

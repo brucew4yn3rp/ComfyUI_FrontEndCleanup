@@ -34,6 +34,7 @@ body.ui_cleanup_hide_error_triangle i.icon-\[lucide--triangle-alert\] {
 }
 
 /* Hide login/account button if enabled */
-body.ui_cleanup_hide_login button[data-testid="login-button"] {
+body.ui_cleanup_hide_login button[data-testid="login-button"],
+body.ui_cleanup_hide_login button[aria-label="Login"]:has(i.icon-\[lucide--user\]) {
     display: none !important;
 }
